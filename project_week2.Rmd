@@ -1,0 +1,52 @@
+---
+title: "Developing Data Products Project Week 2"
+author: "Sebastian Marchi"
+date: "31/8/2018"
+output: html_document
+---
+
+## Some famous Chilean mountains higher than 4000 meters
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+summit <- read.csv("summits.csv", stringsAsFactors = FALSE)
+
+#select mountains with coordinates
+summit_cut <- summit[summit$Coordenadas != "",]
+
+#split coordinate
+coord <- sapply(strsplit(summit_cut$Coordenadas, split = "/", fixed = TRUE), '[', 2)
+lat <- sapply(strsplit(coord, split = ",", fixed = TRUE), '[', 1)
+long <- sapply(strsplit(coord, split = ",", fixed = TRUE), '[', 2)
+long <- as.numeric(long)
+
+lat <- as.numeric(sapply(lat, substr, start = 3, stop = 100))
+
+content <- paste(sep = "<br/>",
+  paste("Name:",summit_cut$Nombre, sep = " "),
+  paste("Altitude:",summit_cut$Altitud,"meters", sep = " ")
+)
+
+#new df
+df <- data.frame(name = summit_cut$Nombre, lat = lat, lng = long)
+```
+
+```{r echo = FALSE}
+library(leaflet)
+
+#icons
+leaficons <- makeIcon(
+    iconUrl = "icon.png",
+    iconWidth = 30,
+    iconHeight = 30
+)
+
+df %>%
+    leaflet() %>%
+    addTiles() %>%
+    addMarkers(~lng, ~lat, popup = content, icon = leaficons)
+
+```
